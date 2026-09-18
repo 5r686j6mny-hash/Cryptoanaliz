@@ -1,2 +1,4 @@
 pandas>=1.5
 matplotlib>=3.5
+mplfinance>=0.12
+pyarrow>=10.0

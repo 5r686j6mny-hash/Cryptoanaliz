@@ -1,5 +1,7 @@
-"""Загрузка и нормализация OHLCV-данных из CSV-файла."""
+"""Загрузка и нормализация OHLCV-данных из CSV или Parquet."""
 from __future__ import annotations
+
+from pathlib import Path
 
 import pandas as pd
 
@@ -23,13 +25,22 @@ def _find_column(columns: list[str], aliases: list[str]) -> str | None:
 
 
 def load_ohlcv(path: str) -> pd.DataFrame:
-    """Читает CSV с историческими данными и приводит колонки к единому виду.
+    """Читает исторические данные (CSV или Parquet) и приводит колонки к
+    единому виду.
 
     Ожидаются (в любом регистре и порядке) колонки даты, open, high, low,
     close и, желательно, volume. Отсутствующий volume заполняется нулями,
     отсутствующий high/low берётся из close.
     """
-    df = pd.read_csv(path)
+    suffix = Path(path).suffix.lower()
+    if suffix == ".parquet":
+        df = pd.read_parquet(path)
+    else:
+        df = pd.read_csv(path)
+    return _normalize(df)
+
+
+def _normalize(df: pd.DataFrame) -> pd.DataFrame:
     columns = list(df.columns)
 
     resolved = {}
